@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World4IA — Roteiro de viagem personalizado por IA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #060b14; color: #e8e2d4; min-height: 100vh; }
+  nav { padding: 24px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; color: #e8e2d4; }
+  .nav-logo span { color: #c9a84c; }
+  .hero { text-align: center; padding: 80px 40px 60px; position: relative; overflow: hidden; }
+  .hero-globe { font-size: 72px; display: block; margin-bottom: 24px; animation: float 5s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: 58px; font-weight: 300; line-height: 1.15; color: #e8e2d4; margin-bottom: 16px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .hero-title em { font-style: italic; color: #c9a84c; }
+  .hero-sub { font-size: 16px; color: rgba(232,226,212,0.5); max-width: 480px; margin: 0 auto 36px; line-height: 1.7; }
+  .hero-price { font-size: 13px; color: rgba(232,226,212,0.35); margin-bottom: 20px; letter-spacing: 1px; }
+  .hero-price strong { color: #c9a84c; font-size: 18px; font-weight: 500; }
+  .btn-cta { display: inline-block; background: #c9a84c; color: #060b14; text-decoration: none; border-radius: 12px; padding: 16px 40px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; transition: all 0.2s; border: none; cursor: pointer; }
+  .btn-cta:hover { background: #d4b560; transform: translateY(-2px); }
+  .hero-secure { font-size: 11px; color: rgba(232,226,212,0.25); margin-top: 14px; letter-spacing: 1px; }
+  .destinations { padding: 60px 40px; max-width: 1000px; margin: 0 auto; }
+  .section-label { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: #c9a84c; text-align: center; margin-bottom: 12px; }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; text-align: center; color: #e8e2d4; margin-bottom: 40px; }
+  .dest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .dest-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 24px; text-align: center; transition: all 0.3s; text-decoration: none; color: #e8e2d4; display: block; }
+  .dest-card:hover { background: rgba(201,168,76,0.07); border-color: rgba(201,168,76,0.3); transform: translateY(-3px); }
+  .dest-icon { font-size: 36px; display: block; margin-bottom: 10px; }
+  .dest-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; margin-bottom: 4px; }
+  .dest-desc { font-size: 12px; color: rgba(232,226,212,0.4); }
+  .how { padding: 60px 40px; max-width: 800px; margin: 0 auto; }
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+  .step-card { text-align: center; padding: 24px 16px; }
+  .step-num { width: 40px; height: 40px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-family: 'Cormorant Garamond', serif; font-size: 18px; color: #c9a84c; }
+  .step-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; color: #e8e2d4; }
+  .step-desc { font-size: 13px; color: rgba(232,226,212,0.4); line-height: 1.6; }
+  .includes { padding: 60px 40px; max-width: 700px; margin: 0 auto; text-align: center; }
+  .includes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 36px; text-align: left; }
+  .include-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px; font-size: 14px; color: rgba(232,226,212,0.7); }
+  .include-icon { font-size: 20px; flex-shrink: 0; }
+  .cta-bottom { text-align: center; padding: 60px 40px 80px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .cta-title { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; margin-bottom: 12px; color: #e8e2d4; }
+  .cta-sub { font-size: 14px; color: rgba(232,226,212,0.4); margin-bottom: 28px; }
+  @media (max-width: 600px) { .hero-title { font-size: 36px; } .dest-grid { grid-template-columns: 1fr 1fr; } .steps-grid { grid-template-columns: 1fr; } .includes-grid { grid-template-columns: 1fr; } nav { padding: 20px; } }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">World<span>4</span>IA</div>
+  <a href="/quiz" class="btn-cta" style="padding: 10px 24px; font-size: 13px;">Criar meu roteiro</a>
+</nav>
+<section class="hero">
+  <span class="hero-globe">🌍</span>
+  <h1 class="hero-title">Seu roteiro de viagem<br><em>personalizado por IA</em></h1>
+  <p class="hero-sub">Responda 10 perguntas e receba um roteiro completo com clima, restaurantes, atracoes e dicas exclusivas gerado por IA em segundos.</p>
+  <div class="hero-price">Por apenas <strong>US$ 19,99</strong> pagamento unico</div>
+  <a href="/quiz" class="btn-cta">Quero meu roteiro personalizado</a>
+  <div class="hero-secure">Pagamento 100% seguro via Stripe</div>
+</section>
+<section class="destinations">
+  <div class="section-label">Destinos disponíveis</div>
+  <h2 class="section-title">Explore o mundo com a gente</h2>
+  <div class="dest-grid">
+    <a href="/quiz" class="dest-card"><span class="dest-icon">🗽</span><div class="dest-name">America do Norte</div><div class="dest-desc">EUA, Canada, Mexico</div></a>
+    <a href="/quiz" class="dest-card"><span class="dest-icon">🌿</span><div class="dest-name">America Latina</div><div class="dest-desc">Brasil, Argentina, Peru</div></a>
+    <a href="/quiz" class="dest-card"><span class="dest-icon">🏰</span><div class="dest-name">Europa</div><div class="dest-desc">Franca, Italia, Espanha</div></a>
+    <a href="/quiz" class="dest-card"><span class="dest-icon">⛩️</span><div class="dest-name">Asia</div><div class="dest-desc">Japao, Tailandia, Bali</div></a>
+    <a href="/quiz" class="dest-card"><span class="dest-icon">🦁</span><div class="dest-name">Africa</div><div class="dest-desc">Safari, natureza, cultura</div></a>
+    <a href="/quiz" class="dest-card"><span class="dest-icon">🦘</span><div class="dest-name">Oceania</div><div class="dest-desc">Australia, Nova Zelandia</div></a>
+  </div>
+</section>
+<section class="how">
+  <div class="section-label">Como funciona</div>
+  <h2 class="section-title">Simples assim</h2>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">1</div><div class="step-title">Responda o quiz</div><div class="step-desc">10 perguntas sobre destino, estilo e preferencias da sua viagem.</div></div>
+    <div class="step-card"><div class="step-num">2</div><div class="step-title">Pague US$ 19,99</div><div class="step-desc">Pagamento seguro via Stripe. Unico, sem assinatura ou cobranca extra.</div></div>
+    <div class="step-card"><div class="step-num">3</div><div class="step-title">Receba seu roteiro</div><div class="step-desc">IA gera um roteiro exclusivo, dia a dia, em segundos.</div></div>
+  </div>
+</section>
+<section class="includes">
+  <div class="section-label">O que esta incluido</div>
+  <h2 class="section-title">Tudo que voce precisa para viajar</h2>
+  <div class="includes-grid">
+    <div class="include-item"><span class="include-icon">📅</span>Roteiro dia a dia detalhado</div>
+    <div class="include-item"><span class="include-icon">🌤️</span>Clima e dicas de vestuario</div>
+    <div class="include-item"><span class="include-icon">🍽️</span>Restaurantes por restricao alimentar</div>
+    <div class="include-item"><span class="include-icon">🚶</span>Estimativa de km por dia</div>
+    <div class="include-item"><span class="include-icon">💰</span>Orcamento estimado em dolares</div>
+    <div class="include-item"><span class="include-icon">💡</span>Dicas exclusivas de cada destino</div>
+    <div class="include-item"><span class="include-icon">🗺️</span>Bairros e transportes ideais</div>
+    <div class="include-item"><span class="include-icon">📸</span>Melhores pontos para fotos</div>
+  </div>
+</section>
+<section class="cta-bottom">
+  <h2 class="cta-title">Pronto para explorar o mundo?</h2>
+  <p class="cta-sub">Seu roteiro exclusivo em menos de 1 minuto.</p>
+  <a href="/quiz" class="btn-cta">Criar meu roteiro agora</a>
+  <div class="hero-secure" style="margin-top: 14px;">Pagamento 100% seguro via Stripe · US$ 19,99 pagamento unico</div>
+</section>
+</body>
+</html>

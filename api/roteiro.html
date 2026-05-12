@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World4IA — Seu Roteiro Personalizado</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #060b14; color: #e8e2d4; min-height: 100vh; }
+  nav { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; color: #e8e2d4; text-decoration: none; }
+  .logo span { color: #c9a84c; }
+  .container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+  .loading { text-align: center; padding: 80px 20px; }
+  .loading-globe { font-size: 64px; display: block; margin-bottom: 24px; animation: spin 3s linear infinite; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .loading-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: #e8e2d4; margin-bottom: 12px; }
+  .loading-sub { font-size: 14px; color: rgba(232,226,212,0.45); line-height: 1.6; }
+  .loading-step { font-size: 12px; color: rgba(201,168,76,0.6); margin-top: 10px; min-height: 18px; }
+  .loading-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; margin: 20px auto 0; overflow: hidden; }
+  .loading-fill { height: 100%; background: #c9a84c; border-radius: 2px; width: 0%; transition: width 0.6s ease; }
+  .roteiro { display: none; }
+  .roteiro-header { text-align: center; padding: 40px 0 32px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 32px; }
+  .roteiro-icon { font-size: 48px; display: block; margin-bottom: 16px; }
+  .roteiro-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #e8e2d4; margin-bottom: 8px; }
+  .roteiro-subtitle { font-size: 13px; color: rgba(232,226,212,0.4); letter-spacing: 2px; text-transform: uppercase; }
+  .roteiro-content { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 32px; line-height: 1.8; font-size: 15px; color: rgba(232,226,212,0.85); }
+  .roteiro-content h2 { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: #c9a84c; margin: 28px 0 12px; }
+  .roteiro-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #e8e2d4; margin: 20px 0 8px; border-left: 2px solid #c9a84c; padding-left: 12px; }
+  .roteiro-content strong { color: #e8e2d4; }
+  .btn-print { display: block; width: 100%; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: #c9a84c; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 20px; text-align: center; }
+  .btn-print:hover { background: rgba(201,168,76,0.15); border-color: #c9a84c; }
+  .btn-novo { display: block; width: 100%; background: #c9a84c; color: #060b14; border: none; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 12px; text-align: center; text-decoration: none; }
+  .btn-novo:hover { background: #d4b560; }
+  .error { display: none; text-align: center; padding: 60px 20px; }
+  .error-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+  .error-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; margin-bottom: 8px; }
+  .error-sub { font-size: 13px; color: rgba(232,226,212,0.45); margin-bottom: 24px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">World<span>4</span>IA</a>
+</nav>
+<div class="container">
+  <div class="loading" id="loading">
+    <span class="loading-globe">🌍</span>
+    <div class="loading-title">Gerando seu roteiro personalizado...</div>
+    <div class="loading-sub">Nossa IA esta criando um roteiro exclusivo para a sua viagem.</div>
+    <div class="loading-step" id="loadingStep">Verificando pagamento...</div>
+    <div class="loading-bar"><div class="loading-fill" id="loadingFill"></div></div>
+  </div>
+  <div class="roteiro" id="roteiro">
+    <div class="roteiro-header">
+      <span class="roteiro-icon">🗺️</span>
+      <div class="roteiro-title" id="roteiroTitulo">Seu Roteiro Personalizado</div>
+      <div class="roteiro-subtitle">World4IA — Gerado por IA</div>
+    </div>
+    <div class="roteiro-content" id="roteiroContent"></div>
+    <button class="btn-print" onclick="window.print()">Imprimir / Salvar como PDF</button>
+    <a href="/" class="btn-novo">Criar novo roteiro</a>
+  </div>
+  <div class="error" id="error">
+    <span class="error-icon">😔</span>
+    <div class="error-title">Algo deu errado</div>
+    <div class="error-sub" id="errorMsg">Nao foi possivel gerar o roteiro.</div>
+    <a href="/" class="btn-novo">Tentar novamente</a>
+  </div>
+</div>
+<script>
+function setProgress(pct, msg) {
+  document.getElementById('loadingFill').style.width = pct + '%';
+  if (msg) document.getElementById('loadingStep').textContent = msg;
+}
+async function gerarRoteiro() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+  if (!sessionId) { showError('Acesso nao autorizado. Complete o pagamento primeiro.'); return; }
+  setProgress(15, 'Verificando pagamento...');
+  try {
+    const sessionResp = await fetch('/api/session?id=' + encodeURIComponent(sessionId));
+    const sessionData = await sessionResp.json();
+    if (!sessionResp.ok || !sessionData.paid) throw new Error(sessionData.error || 'Pagamento nao confirmado.');
+    const destination = sessionData.destination || '';
+    const answers = sessionData.answers || {};
+    setProgress(40, 'Pagamento confirmado! Preparando roteiro...');
+    if (destination) {
+      document.getElementById('roteiroTitulo').textContent = 'Roteiro: ' + destination;
+      document.title = 'World4IA — Roteiro ' + destination;
+    }
+    setProgress(60, 'Consultando IA...');
+    const genResp = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers, destination }),
+    });
+    const genData = await genResp.json();
+    if (!genResp.ok || !genData.roteiro) throw new Error(genData.error || 'Erro ao gerar roteiro.');
+    setProgress(100, 'Pronto!');
+    document.getElementById('roteiroContent').innerHTML = formatRoteiro(genData.roteiro);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('roteiro').style.display = 'block';
+  } catch (err) {
+    showError(err.message);
+  }
+}
+function formatRoteiro(text) {
+  return text
+    .replace(/## (.*)/g, '<h2>$1</h2>')
+    .replace(/### (.*)/g, '<h3>$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+  document.getElementById('errorMsg').textContent = msg;
+}
+gerarRoteiro();
+</script>
+</body>
+</html>

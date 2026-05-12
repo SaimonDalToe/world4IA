@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World4IA — Seu roteiro personalizado pelo mundo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #060b14; color: #e8e2d4; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #0a0f1a; border-radius: 20px; width: 100%; max-width: 560px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
+  .hero { background: linear-gradient(180deg, #0d1526 0%, #0a0f1a 100%); padding: 44px 40px 36px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); position: relative; }
+  .globe { font-size: 52px; display: block; margin-bottom: 14px; animation: float 4s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; letter-spacing: 8px; color: #e8e2d4; text-transform: uppercase; }
+  .logo span { color: #c9a84c; }
+  .tagline { font-size: 12px; color: rgba(232,226,212,0.38); letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; }
+  .body { padding: 32px 40px 40px; }
+  .progress-bar { height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #c9a84c; border-radius: 2px; transition: width 0.5s cubic-bezier(.4,0,.2,1); width: 10%; }
+  .step { display: none; animation: fadeIn 0.3s ease; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .step-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #c9a84c; margin-bottom: 10px; }
+  .question { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: #e8e2d4; line-height: 1.3; margin-bottom: 6px; }
+  .hint { font-size: 13px; color: rgba(232,226,212,0.4); margin-bottom: 22px; line-height: 1.5; }
+  .continents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .continent-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 8px; cursor: pointer; transition: all 0.2s; text-align: center; color: #e8e2d4; font-family: 'DM Sans', sans-serif; }
+  .continent-btn:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
+  .continent-btn.selected { background: rgba(201,168,76,0.11); border-color: #c9a84c; }
+  .continent-icon { font-size: 26px; display: block; margin-bottom: 6px; }
+  .continent-name { font-size: 11px; font-weight: 500; letter-spacing: 0.3px; }
+  .selects { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  .select-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(232,226,212,0.38); margin-bottom: 7px; }
+  select { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 10px; padding: 11px 14px; color: #e8e2d4; font-family: 'DM Sans', sans-serif; font-size: 13px; appearance: none; cursor: pointer; outline: none; transition: border-color 0.2s; }
+  select:focus { border-color: rgba(201,168,76,0.5); }
+  select option { background: #1a2035; color: #e8e2d4; }
+  select.required-error { border-color: #e05252; }
+  .error-msg { font-size: 11px; color: #e05252; margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .option { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 13px 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 11px; color: #e8e2d4; }
+  .option:hover { background: rgba(201,168,76,0.07); border-color: rgba(201,168,76,0.3); }
+  .option.selected { background: rgba(201,168,76,0.11); border-color: #c9a84c; }
+  .option-icon { font-size: 22px; flex-shrink: 0; }
+  .option strong { display: block; font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .option span { font-size: 11px; color: rgba(232,226,212,0.42); }
+  .epoca-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .epoca-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; color: #e8e2d4; text-align: center; }
+  .epoca-card:hover { background: rgba(201,168,76,0.07); border-color: rgba(201,168,76,0.3); }
+  .epoca-card.selected { background: rgba(201,168,76,0.11); border-color: #c9a84c; }
+  .epoca-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+  .epoca-nome { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .epoca-meses { font-size: 11px; color: rgba(232,226,212,0.45); margin-bottom: 4px; }
+  .epoca-temp { font-size: 11px; color: #c9a84c; }
+  .multi-hint { font-size: 11px; background: rgba(201,168,76,0.09); border: 1px solid rgba(201,168,76,0.2); border-radius: 6px; padding: 5px 12px; color: #c9a84c; display: inline-block; margin-bottom: 16px; }
+  .tags-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+  .tag-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; padding: 10px 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; color: #e8e2d4; font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .tag-item:hover { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.35); }
+  .tag-item.selected { background: rgba(201,168,76,0.15); border-color: #c9a84c; color: #c9a84c; }
+  .tag-icon { font-size: 16px; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .btn-back { background: none; border: none; color: rgba(232,226,212,0.35); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; padding: 4px 0; transition: color 0.2s; }
+  .btn-back:hover { color: #e8e2d4; }
+  .btn-next { background: #c9a84c; color: #0a0f1a; border: none; border-radius: 10px; padding: 13px 28px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
+  .btn-next:hover { background: #d4b560; transform: translateY(-1px); }
+  .checkout { text-align: center; padding: 10px 0 4px; }
+  .checkout-icon { font-size: 54px; display: block; margin-bottom: 18px; animation: float 3s ease-in-out infinite; }
+  .checkout-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; margin-bottom: 8px; color: #e8e2d4; }
+  .checkout-sub { font-size: 13px; color: rgba(232,226,212,0.45); margin-bottom: 26px; line-height: 1.6; }
+  .price-card { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.22); border-radius: 14px; padding: 22px; margin-bottom: 20px; text-align: left; }
+  .price-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(232,226,212,0.38); margin-bottom: 6px; }
+  .price { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: #c9a84c; line-height: 1; margin-bottom: 16px; }
+  .price-item { font-size: 13px; color: rgba(232,226,212,0.58); padding: 5px 0; display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .btn-pay { width: 100%; background: #c9a84c; color: #0a0f1a; border: none; border-radius: 12px; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
+  .btn-pay:hover { background: #d4b560; transform: translateY(-1px); }
+  .secure { font-size: 11px; color: rgba(232,226,212,0.25); margin-top: 10px; letter-spacing: 0.8px; }
+  .dots { display: flex; gap: 6px; justify-content: center; margin-top: 18px; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: background 0.3s; }
+  .dot.active { background: #c9a84c; }
+</style>
+</head><body>
+<div class="card">
+  <div class="hero">
+    <span class="globe">🌍</span>
+    <div class="logo">World<span>4</span>IA</div>
+    <div class="tagline">Seu roteiro personalizado pelo mundo</div>
+  </div>
+  <div class="body">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="step active" id="step1">
+      <div class="step-label">Pergunta 1 de 10 — Destino</div>
+      <div class="question">Para onde e a sua proxima viagem?</div>
+      <div class="hint">Selecione o continente, depois o pais e a cidade.</div>
+      <div class="continents">
+        <button class="continent-btn" onclick="selectContinent(this,'americas_norte')"><span class="continent-icon">🗽</span><span class="continent-name">America do Norte</span></button>
+        <button class="continent-btn" onclick="selectContinent(this,'americas_sul')"><span class="continent-icon">🌿</span><span class="continent-name">America Latina</span></button>
+        <button class="continent-btn" onclick="selectContinent(this,'europa')"><span class="continent-icon">🏰</span><span class="continent-name">Europa</span></button>
+        <button class="continent-btn" onclick="selectContinent(this,'asia')"><span class="continent-icon">⛩️</span><span class="continent-name">Asia</span></button>
+        <button class="continent-btn" onclick="selectContinent(this,'africa')"><span class="continent-icon">🦁</span><span class="continent-name">Africa</span></button>
+        <button class="continent-btn" onclick="selectContinent(this,'oceania')"><span class="continent-icon">🦘</span><span class="continent-name">Oceania</span></button>
+      </div>
+      <div class="selects">
+        <div>
+          <div class="select-label">Pais *</div>
+          <select id="selectPais" onchange="updateCidades()"><option value="">Selecione o continente...</option></select>
+          <div class="error-msg" id="erroPais">Por favor, selecione um pais.</div>
+        </div>
+        <div>
+          <div class="select-label">Cidade *</div>
+          <select id="selectCidade" onchange="onCidadeChange()"><option value="">Selecione o pais...</option></select>
+          <div class="error-msg" id="erroCidade">Por favor, selecione uma cidade.</div>
+        </div>
+      </div>
+      <div class="nav"><span></span><button class="btn-next" onclick="validarDestino()">Continuar</button></div>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-label">Pergunta 2 de 10 — Duracao</div>
+      <div class="question">Quantos dias voce ficara?</div>
+      <div class="hint">Isso define o quanto conseguimos explorar.</div>
+      <div class="options">
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">✈️</span><div><strong>2 dias</strong><span>Fim de semana rapido</span></div></div>
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">📅</span><div><strong>3 dias</strong><span>O essencial</span></div></div>
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">🗓️</span><div><strong>4-5 dias</strong><span>Tempo confortavel</span></div></div>
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">🌟</span><div><strong>6-7 dias</strong><span>Exploracao completa</span></div></div>
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">🏨</span><div><strong>8-10 dias</strong><span>Mergulho profundo</span></div></div>
+        <div class="option" onclick="selectOption(this,'duracao')"><span class="option-icon">🌍</span><div><strong>11-15 dias</strong><span>Experiencia total</span></div></div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(1)">Voltar</button><button class="btn-next" onclick="goStep(3)">Continuar</button></div>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-label">Pergunta 3 de 10 — Epoca</div>
+      <div class="question">Quando voce vai viajar?</div>
+      <div class="hint" id="hintEpoca">Vou incluir dicas de clima e vestuario para cada dia.</div>
+      <div class="epoca-grid" id="epocaGrid"></div>
+      <div class="nav"><button class="btn-back" onclick="goStep(2)">Voltar</button><button class="btn-next" onclick="goStep(4)">Continuar</button></div>
+    </div>
+    <div class="step" id="step4">
+      <div class="step-label">Pergunta 4 de 10 — Estilo</div>
+      <div class="question">Qual e o seu estilo de viagem?</div>
+      <div class="hint">Define o nivel das atracoes e restaurantes sugeridos.</div>
+      <div class="options" style="grid-template-columns: 1fr;">
+        <div class="option" onclick="selectOption(this,'estilo')"><span class="option-icon">✂️</span><div><strong>Economico</strong><span>Aproveitar ao maximo gastando pouco</span></div></div>
+        <div class="option" onclick="selectOption(this,'estilo')"><span class="option-icon">✨</span><div><strong>Conforto</strong><span>Bom custo-beneficio, sem abrir mao do conforto</span></div></div>
+        <div class="option" onclick="selectOption(this,'estilo')"><span class="option-icon">👑</span><div><strong>Luxo</strong><span>Experiencias premium, hoteis e restaurantes exclusivos</span></div></div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(3)">Voltar</button><button class="btn-next" onclick="goStep(5)">Continuar</button></div>
+    </div>
+    <div class="step" id="step5">
+      <div class="step-label">Pergunta 5 de 10 — Companhia</div>
+      <div class="question">Com quem voce vai viajar?</div>
+      <div class="hint">Influencia as atividades e o ritmo sugeridos.</div>
+      <div class="options">
+        <div class="option" onclick="selectOption(this,'companhia')"><span class="option-icon">🧳</span><div><strong>Sozinho</strong><span>Liberdade total</span></div></div>
+        <div class="option" onclick="selectOption(this,'companhia')"><span class="option-icon">❤️</span><div><strong>Em casal</strong><span>Momento a dois</span></div></div>
+        <div class="option" onclick="selectOption(this,'companhia')"><span class="option-icon">👫</span><div><strong>Com amigos</strong><span>Diversao em grupo</span></div></div>
+        <div class="option" onclick="selectOption(this,'companhia')"><span class="option-icon">👨‍👩‍👧</span><div><strong>Com familia</strong><span>Para todas as idades</span></div></div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(4)">Voltar</button><button class="btn-next" onclick="goStep(6)">Continuar</button></div>
+    </div>
+    <div class="step" id="step6">
+      <div class="step-label">Pergunta 6 de 10 — Interesses</div>
+      <div class="question">Quais sao seus principais interesses?</div>
+      <span class="multi-hint">+ Selecione quantos quiser</span>
+      <div class="tags-grid">
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🏛️</span>Cultura e historia</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🍽️</span>Gastronomia</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🌿</span>Natureza</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🛍️</span>Compras</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🎭</span>Arte e arquitetura</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🎉</span>Vida noturna</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🦁</span>Vida selvagem</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">⛪</span>Turismo religioso</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🏄</span>Esportes e aventura</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🍷</span>Vinhos e degustacoes</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">📸</span>Fotografia</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🎵</span>Musica e festivais</div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(5)">Voltar</button><button class="btn-next" onclick="goStep(7)">Continuar</button></div>
+    </div>
+    <div class="step" id="step7">
+      <div class="step-label">Pergunta 7 de 10 — Ritmo</div>
+      <div class="question">Qual ritmo de viagem voce prefere?</div>
+      <div class="hint">Define quantas atividades colocamos por dia.</div>
+      <div class="options" style="grid-template-columns: 1fr;">
+        <div class="option" onclick="selectOption(this,'ritmo')"><span class="option-icon">🍃</span><div><strong>Tranquilo</strong><span>Menos pressa, mais contemplacao</span></div></div>
+        <div class="option" onclick="selectOption(this,'ritmo')"><span class="option-icon">⚖️</span><div><strong>Equilibrado</strong><span>Bom mix de atividades e descanso</span></div></div>
+        <div class="option" onclick="selectOption(this,'ritmo')"><span class="option-icon">🔥</span><div><strong>Intenso</strong><span>Aproveitar ao maximo cada hora</span></div></div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(6)">Voltar</button><button class="btn-next" onclick="goStep(8)">Continuar</button></div>
+    </div>
+    <div class="step" id="step8">
+      <div class="step-label">Pergunta 8 de 10 — Preferencias</div>
+      <div class="question">Alguma limitacao ou preferencia especial?</div>
+      <div class="hint">Garante que o roteiro seja 100% adequado para voce.</div>
+      <span class="multi-hint">+ Selecione quantos quiser</span>
+      <div class="tags-grid">
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">✅</span>Sem restricoes</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">⏳</span>Evitar filas longas</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">♿</span>Acessibilidade</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">👶</span>Criancas pequenas</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🚖</span>Evitar transporte publico</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🐾</span>Viajando com pet</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">👴</span>Idosos na viagem</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">💼</span>Viagem de negocios</div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(7)">Voltar</button><button class="btn-next" onclick="goStep(9)">Continuar</button></div>
+    </div>
+    <div class="step" id="step9">
+      <div class="step-label">Pergunta 9 de 10 — Alimentacao</div>
+      <div class="question">Voce tem alguma restricao alimentar?</div>
+      <div class="hint">Vou sugerir restaurantes e lanches compativeis com seu perfil.</div>
+      <span class="multi-hint">+ Selecione quantos quiser</span>
+      <div class="tags-grid">
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🍽️</span>Sem restricoes</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🥬</span>Vegetariano</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🌱</span>Vegano</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🦐</span>Sem frutos do mar</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🌾</span>Sem gluten</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🥛</span>Sem lactose</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🥩</span>Carnivoro assumido</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">🌶️</span>Sem comida picante</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">✡️</span>Kosher</div>
+        <div class="tag-item" onclick="toggleTag(this)"><span class="tag-icon">☪️</span>Halal</div>
+      </div>
+      <div class="nav"><button class="btn-back" onclick="goStep(8)">Voltar</button><button class="btn-next" onclick="goStep(10)">Continuar</button></div>
+    </div>
+    <div class="step" id="step10">
+      <div class="step-label">Pergunta 10 de 10 — Hospedagem</div>
+      <div class="question">Em qual bairro voce vai se hospedar?</div>
+      <div class="hint" id="hintHospedagem">Vou montar o roteiro priorizando atracoes proximas ao seu hotel.</div>
+      <div class="tags-grid" id="bairrosGrid"></div>
+      <div class="nav"><button class="btn-back" onclick="goStep(9)">Voltar</button><button class="btn-next" onclick="goStep(11)">Ver meu roteiro</button></div>
+    </div>
+    <div class="step" id="step11">
+      <div class="checkout">
+        <span class="checkout-icon">🗺️</span>
+        <div class="checkout-title">Seu roteiro esta pronto para ser gerado!</div>
+        <div class="checkout-sub">Nossa IA vai criar um roteiro exclusivo para a sua viagem, dia a dia.</div>
+        <div class="price-card">
+          <div class="price-label">Investimento unico</div>
+          <div class="price">US$ 19,99</div>
+          <div class="price-item">Roteiro dia a dia personalizado</div>
+          <div class="price-item" id="resumoDestino"></div>
+          <div class="price-item">Previsao de clima e dicas de vestuario</div>
+          <div class="price-item">Restaurantes por restricao alimentar</div>
+          <div class="price-item">Estimativa de km percorridos por dia</div>
+          <div class="price-item">Dicas exclusivas de cada destino</div>
+          <div class="price-item">Bairros e transportes ideais</div>
+        </div>
+        <button class="btn-pay" onclick="iniciarPagamento()" id="btnPagar">Quero meu roteiro — Pagar US$ 19,99</button>
+        <div class="secure">Pagamento 100% seguro via Stripe</div>
+      </div>
+      <div class="nav" style="margin-top: 20px;"><button class="btn-back" onclick="goStep(10)">Voltar</button><span></span></div>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+</div><script>
+const totalSteps = 11;
+
+const cidades = {
+  eua: ['Nova York','Miami','Las Vegas','Los Angeles','Chicago','San Francisco','Orlando','Boston','New Orleans','Nashville','Seattle','Washington DC','Hawaii','San Diego','Austin','Denver','Phoenix','Atlanta','Portland','Salt Lake City','Minneapolis','Detroit','Philadelphia'],
+  canada: ['Toronto','Vancouver','Montreal','Quebec City','Calgary','Ottawa','Victoria','Whistler','Banff','Halifax','Niagara Falls','Edmonton'],
+  mexico: ['Cidade do Mexico','Cancun','Los Cabos','Guadalajara','Oaxaca','Tulum','Playa del Carmen','Puerto Vallarta','San Miguel de Allende','Merida','Puebla','Guanajuato'],
+  brasil: ['Rio de Janeiro','Sao Paulo','Salvador','Florianopolis','Foz do Iguacu','Fortaleza','Manaus','Recife','Natal','Maceio','Porto Alegre','Curitiba','Belem','Bonito','Gramado','Fernando de Noronha'],
+  argentina: ['Buenos Aires','Mendoza','Bariloche','Salta','Cordoba','Ushuaia','El Calafate','Puerto Madryn','Iguazu','Rosario','Mar del Plata'],
+  peru: ['Lima','Cusco','Arequipa','Machu Picchu','Trujillo','Iquitos','Puno','Nazca','Paracas','Huaraz'],
+  chile: ['Santiago','Patagonia','San Pedro de Atacama','Valparaiso','Puerto Natales','Punta Arenas','Vina del Mar','Puerto Montt'],
+  colombia: ['Bogota','Cartagena','Medellin','Santa Marta','Cali','Tayrona','Villa de Leyva','Popayan','San Andres'],
+  uruguay: ['Montevideu','Punta del Este','Colonia do Sacramento'],
+  bolivia: ['La Paz','Salar de Uyuni','Sucre','Potosi','Copacabana'],
+  equador: ['Quito','Galapagos','Cuenca','Banos','Otavalo'],
+  venezuela: ['Canaima','Ilha Margarita','Los Roques'],
+  paraguai: ['Assuncao','Encarnacion'],
+  franca: ['Paris','Lyon','Bordeaux','Nice','Marseille','Estrasburgo','Normandia','Provenca','Annecy','Cannes','Colmar','Avignon','Versalhes'],
+  italia: ['Roma','Florenca','Veneza','Milao','Napoles','Amalfi','Cinque Terre','Sicilia','Turim','Bolonha','Verona','Palermo','Sardenia','Pompeia','Lago de Como','Positano','Capri','Toscana'],
+  espanha: ['Madrid','Barcelona','Sevilha','Granada','Valencia','Bilbao','Toledo','Cordoba','San Sebastian','Salamanca','Maiorca','Ibiza','Santiago de Compostela','Malaga'],
+  portugal: ['Lisboa','Porto','Algarve','Sintra','Evora','Douro','Madeira','Acores','Coimbra','Braga','Cascais'],
+  alemanha: ['Berlim','Munique','Hamburgo','Frankfurt','Colonia','Dresden','Heidelberg','Rothenburg','Baviera','Nuremberg','Stuttgart'],
+  reino_unido: ['Londres','Edimburgo','Manchester','Liverpool','Oxford','Cambridge','Bath','York','Lake District','Cotswolds','Brighton','Bristol','Cardiff','Belfast','Highlands'],
+  grecia: ['Atenas','Santorini','Mykonos','Creta','Rodes','Corfu','Meteora','Tessalonica','Delfos','Olimpia'],
+  turquia: ['Istambul','Capadocia','Efeso','Bodrum','Antalya','Pamukkale','Troia','Kusadasi'],
+  austria: ['Viena','Salzburgo','Hallstatt','Innsbruck','Graz'],
+  suica: ['Zurique','Genebra','Berna','Interlaken','Lucerna','Zermatt','Lausanne'],
+  holanda: ['Amsterda','Roterda','Haia','Utrecht','Delft','Keukenhof'],
+  belgica: ['Bruxelas','Bruges','Gante','Antuérpia'],
+  republica_checa: ['Praga','Cesky Krumlov','Brno'],
+  hungria: ['Budapeste','Lago Balaton'],
+  polonia: ['Cracovia','Varsovia','Gdansk','Wroclaw'],
+  croacia: ['Dubrovnik','Split','Zagreb','Plitvice','Hvar'],
+  irlanda: ['Dublin','Galway','Killarney','Cork','Belfast'],
+  noruega: ['Oslo','Bergen','Fjords','Tromso','Lofoten'],
+  suecia: ['Estocolmo','Gotemburgo','Malmo','Uppsala','Laponia'],
+  dinamarca: ['Copenhague','Aarhus','Odense'],
+  finlandia: ['Helsinki','Rovaniemi','Laponia','Turku'],
+  islandia: ['Reykjavik','Aurora Boreal','Circulo Dourado','Vik','Akureyri'],
+  japao: ['Toquio','Osaka','Kyoto','Hiroshima','Sapporo','Nara','Hakone','Kamakura','Kanazawa','Okinawa','Nagasaki','Takayama','Miyajima','Yokohama','Kobe'],
+  tailandia: ['Bangkok','Chiang Mai','Phuket','Koh Samui','Pai','Krabi','Koh Phi Phi','Ayutthaya','Chiang Rai','Kanchanaburi'],
+  bali: ['Ubud','Seminyak','Canggu','Nusa Penida','Uluwatu','Kuta','Jimbaran','Amed','Lovina'],
+  india: ['Mumbai','Delhi','Jaipur','Goa','Kerala','Agra','Rajastao','Varanasi','Rishikesh','Darjeeling','Chennai','Kolkata','Udaipur','Jodhpur'],
+  china: ['Pequim','Xangai','Xian','Guilin','Chengdu','Hong Kong','Macau','Lhasa','Hangzhou','Suzhou','Zhangjiajie','Chongqing'],
+  vietna: ['Hanoi','Ho Chi Minh','Hoi An','Halong Bay','Hue','Da Nang','Sapa','Mekong Delta','Phu Quoc','Nha Trang'],
+  cambodja: ['Angkor Wat','Phnom Penh','Sihanoukville','Kampot'],
+  nepal: ['Katmandu','Pokhara','Everest Base Camp','Chitwan','Bhaktapur'],
+  coreia_sul: ['Seoul','Busan','Jeju','Gyeongju','Incheon'],
+  singapura: ['Singapura'],
+  malaisia: ['Kuala Lumpur','Penang','Langkawi','Borneo','Malaca'],
+  dubai: ['Dubai','Abu Dhabi','Sharjah'],
+  israel: ['Jerusalém','Tel Aviv','Eilat','Mar Morto','Nazare'],
+  jordania: ['Petra','Wadi Rum','Ama','Aqaba'],
+  africa_sul: ['Joanesburgo','Cidade do Cabo','Safari Kruger','Durban','Garden Route'],
+  kenya: ['Nairobi','Masai Mara','Amboseli','Mombasa','Lago Nakuru'],
+  marrocos: ['Marrakech','Fez','Casablanca','Essaouira','Chefchaouen','Rabat','Agadir','Deserto do Saara'],
+  tanzania: ['Serengeti','Kilimanjaro','Zanzibar','Ngorongoro','Dar es Salaam'],
+  egito: ['Cairo','Luxor','Aswan','Hurghada','Sharm el-Sheikh','Alexandria','Cruzeiro no Nilo'],
+  tunísia: ['Tunis','Sidi Bou Said','Djerba','Sousse'],
+  ghana: ['Accra','Cape Coast','Kumasi'],
+  namibia: ['Windhoek','Namib Desert','Sossusvlei','Etosha','Swakopmund'],
+  botswana: ['Okavango Delta','Chobe','Maun'],
+  australia: ['Sydney','Melbourne','Brisbane','Perth','Cairns','Adelaide','Gold Coast','Byron Bay','Grande Barreira de Coral','Uluru','Darwin','Hobart','Alice Springs'],
+  nova_zelandia: ['Auckland','Queenstown','Christchurch','Wellington','Rotorua','Milford Sound','Hobbiton','Abel Tasman','Bay of Islands'],
+  fiji: ['Viti Levu','Ilhas Mamanuca','Ilhas Yasawa'],
+  tahiti: ['Bora Bora','Moorea','Papeete'],
+};const bairrosPorCidade = {
+  'Nova York': ['Midtown Manhattan','Downtown','Upper West Side','Brooklyn','Chelsea','Harlem','Ainda nao decidi'],
+  'Miami': ['South Beach','Brickell','Wynwood','Coral Gables','Little Havana','Ainda nao decidi'],
+  'Las Vegas': ['The Strip','Downtown Fremont','Summerlin','Ainda nao decidi'],
+  'Los Angeles': ['Hollywood','Santa Monica','Beverly Hills','Downtown LA','Malibu','Ainda nao decidi'],
+  'Chicago': ['The Loop','Lincoln Park','River North','Wicker Park','Ainda nao decidi'],
+  'San Francisco': ['Union Square','Fishermans Wharf','Mission District','Nob Hill','Ainda nao decidi'],
+  'Orlando': ['International Drive','Disney Springs','Lake Buena Vista','Ainda nao decidi'],
+  'Boston': ['Back Bay','Beacon Hill','South End','Cambridge','Fenway','Ainda nao decidi'],
+  'New Orleans': ['French Quarter','Garden District','Marigny','Uptown','Ainda nao decidi'],
+  'Nashville': ['Downtown Broadway','The Gulch','East Nashville','Ainda nao decidi'],
+  'Toronto': ['Downtown','Entertainment District','Distillery District','Yorkville','Ainda nao decidi'],
+  'Vancouver': ['Downtown','Gastown','Yaletown','Kitsilano','Ainda nao decidi'],
+  'Montreal': ['Plateau-Mont-Royal','Old Montreal','Downtown','Mile End','Ainda nao decidi'],
+  'Cidade do Mexico': ['Polanco','Condesa','Centro Historico','Coyoacan','Ainda nao decidi'],
+  'Cancun': ['Zona Hotelera','Centro','Ainda nao decidi'],
+  'Tulum': ['Zona Hotelera','Centro','Ainda nao decidi'],
+  'Rio de Janeiro': ['Ipanema','Copacabana','Santa Teresa','Barra da Tijuca','Lapa','Ainda nao decidi'],
+  'Sao Paulo': ['Jardins','Vila Madalena','Itaim Bibi','Pinheiros','Ainda nao decidi'],
+  'Salvador': ['Pelourinho','Barra','Rio Vermelho','Ainda nao decidi'],
+  'Buenos Aires': ['Palermo','San Telmo','Recoleta','Puerto Madero','Belgrano','Ainda nao decidi'],
+  'Lima': ['Miraflores','Barranco','San Isidro','Centro Historico','Ainda nao decidi'],
+  'Cusco': ['Centro Historico','San Blas','Ainda nao decidi'],
+  'Santiago': ['Providencia','Las Condes','Bellavista','Santiago Centro','Ainda nao decidi'],
+  'Bogota': ['Zona Rosa','La Candelaria','Usaquen','Ainda nao decidi'],
+  'Cartagena': ['Cidade Amuralhada','Bocagrande','Getsemani','Ainda nao decidi'],
+  'Medellin': ['El Poblado','Laureles','Envigado','Ainda nao decidi'],
+  'Paris': ['Centro Historico 1-4','Saint-Germain','Montmartre','Marais','Champs-Elysees','Ainda nao decidi'],
+  'Lyon': ['Vieux-Lyon','Presquile','Croix-Rousse','Ainda nao decidi'],
+  'Roma': ['Centro Storico','Trastevere','Prati','Testaccio','Ainda nao decidi'],
+  'Florenca': ['Centro Historico','Oltrarno','Santa Croce','Ainda nao decidi'],
+  'Veneza': ['San Marco','Cannaregio','Dorsoduro','Castello','Ainda nao decidi'],
+  'Milao': ['Centro Duomo','Brera','Navigli','Porta Venezia','Ainda nao decidi'],
+  'Madrid': ['Centro Sol','Malasana','Chueca','Salamanca','La Latina','Ainda nao decidi'],
+  'Barcelona': ['Gothic Las Ramblas','Eixample','Gracia','Barceloneta','Ainda nao decidi'],
+  'Lisboa': ['Alfama','Bairro Alto','Principe Real','Belem','Ainda nao decidi'],
+  'Porto': ['Ribeira','Vila Nova de Gaia','Bonfim','Baixa','Ainda nao decidi'],
+  'Londres': ['Westminster','Soho','Notting Hill','Camden','South Bank','Shoreditch','Ainda nao decidi'],
+  'Edimburgo': ['Old Town','New Town','Leith','Stockbridge','Ainda nao decidi'],
+  'Berlim': ['Mitte','Prenzlauer Berg','Kreuzberg','Charlottenburg','Ainda nao decidi'],
+  'Munique': ['Altstadt','Schwabing','Maxvorstadt','Bogenhausen','Ainda nao decidi'],
+  'Amsterda': ['Canal Ring','Jordaan','De Pijp','Amsterdam Noord','Ainda nao decidi'],
+  'Praga': ['Cidade Velha','Mala Strana','Vinohrady','Ainda nao decidi'],
+  'Budapeste': ['Pest Centro','Buda Castelo','Obuda','Ainda nao decidi'],
+  'Cracovia': ['Cidade Velha','Kazimierz','Podgorze','Ainda nao decidi'],
+  'Atenas': ['Plaka','Monastiraki','Kolonaki','Exarchia','Ainda nao decidi'],
+  'Santorini': ['Fira','Oia','Imerovigli','Akrotiri','Ainda nao decidi'],
+  'Mykonos': ['Mykonos Town','Platis Gialos','Ornos','Ainda nao decidi'],
+  'Istambul': ['Sultanahmet','Beyoglu Taksim','Bosphorus','Kadikoy','Ainda nao decidi'],
+  'Capadocia': ['Goreme','Urgup','Avanos','Uchisar','Ainda nao decidi'],
+  'Viena': ['1 Distrito Centro','Naschmarkt','Prater','Ainda nao decidi'],
+  'Toquio': ['Shinjuku','Shibuya','Asakusa','Akihabara','Harajuku','Ainda nao decidi'],
+  'Osaka': ['Namba','Shinsaibashi','Umeda','Dotonbori','Ainda nao decidi'],
+  'Kyoto': ['Gion','Arashiyama','Fushimi','Centro','Ainda nao decidi'],
+  'Bangkok': ['Sukhumvit','Silom','Rattanakosin','Khao San','Ainda nao decidi'],
+  'Chiang Mai': ['Cidade Velha','Nimman','Santitham','Ainda nao decidi'],
+  'Phuket': ['Patong','Kata Karon','Rawai','Kamala','Ainda nao decidi'],
+  'Ubud': ['Centro de Ubud','Penestanan','Tegalalang','Ainda nao decidi'],
+  'Seminyak': ['Seminyak','Oberoi','Ainda nao decidi'],
+  'Canggu': ['Batu Bolong','Berawa','Pererenan','Ainda nao decidi'],
+  'Mumbai': ['Colaba','Bandra','Marine Drive','Juhu','Ainda nao decidi'],
+  'Delhi': ['Connaught Place','Karol Bagh','Hauz Khas','Old Delhi','Ainda nao decidi'],
+  'Jaipur': ['Cidade Velha','Bani Park','Malviya Nagar','Ainda nao decidi'],
+  'Sydney': ['CBD','Bondi Beach','Surry Hills','Manly','Ainda nao decidi'],
+  'Melbourne': ['CBD','Fitzroy','St Kilda','South Yarra','Ainda nao decidi'],
+  'Marrakech': ['Medina','Gueliz','Hivernage','Ainda nao decidi'],
+  'Dubai': ['Downtown Burj Khalifa','Dubai Marina','Jumeirah','Deira','Palm Jumeirah','Ainda nao decidi'],
+  'Seoul': ['Gangnam','Hongdae','Insadong','Myeongdong','Itaewon','Ainda nao decidi'],
+  'Cidade do Cabo': ['Waterfront','Camps Bay','Bo-Kaap','Sea Point','Ainda nao decidi'],
+};
+
+const paisesPorContinente = {
+  americas_norte: [['eua','EUA'],['canada','Canada'],['mexico','Mexico']],
+  americas_sul: [['brasil','Brasil'],['argentina','Argentina'],['peru','Peru'],['chile','Chile'],['colombia','Colombia'],['uruguay','Uruguai'],['bolivia','Bolivia'],['equador','Equador'],['venezuela','Venezuela'],['paraguai','Paraguai']],
+  europa: [['franca','Franca'],['italia','Italia'],['espanha','Espanha'],['portugal','Portugal'],['alemanha','Alemanha'],['reino_unido','Reino Unido'],['grecia','Grecia'],['turquia','Turquia'],['austria','Austria'],['suica','Suica'],['holanda','Holanda'],['belgica','Belgica'],['republica_checa','Rep. Tcheca'],['hungria','Hungria'],['polonia','Polonia'],['croacia','Croacia'],['irlanda','Irlanda'],['noruega','Noruega'],['suecia','Suecia'],['dinamarca','Dinamarca'],['finlandia','Finlandia'],['islandia','Islandia']],
+  asia: [['japao','Japao'],['tailandia','Tailandia'],['bali','Bali'],['india','India'],['china','China'],['vietna','Vietna'],['cambodja','Camboja'],['nepal','Nepal'],['coreia_sul','Coreia do Sul'],['singapura','Singapura'],['malaisia','Malasia'],['dubai','Dubai'],['israel','Israel'],['jordania','Jordania']],
+  africa: [['africa_sul','Africa do Sul'],['kenya','Quenia'],['marrocos','Marrocos'],['tanzania','Tanzania'],['egito','Egito'],['ghana','Gana'],['namibia','Namibia'],['botswana','Botswana']],
+  oceania: [['australia','Australia'],['nova_zelandia','Nova Zelandia'],['fiji','Fiji'],['tahiti','Taiti']],
+};
+
+const hemisfesrioSul = ['brasil','argentina','peru','chile','africa_sul','australia','nova_zelandia'];
+
+function getEstacoes(pais) {
+  const sul = hemisfesrioSul.includes(pais);
+  if (sul) {
+    return [
+      { icon: '☀️', nome: 'Verao', meses: 'Dez - Fev', temp: 'Quente e umido', value: 'verao' },
+      { icon: '🍂', nome: 'Outono', meses: 'Mar - Mai', temp: 'Fresco e agradavel', value: 'outono' },
+      { icon: '❄️', nome: 'Inverno', meses: 'Jun - Ago', temp: 'Frio e seco', value: 'inverno' },
+      { icon: '🌸', nome: 'Primavera', meses: 'Set - Nov', temp: 'Tempo agradavel', value: 'primavera' },
+    ];
+  } else {
+    return [
+      { icon: '❄️', nome: 'Inverno', meses: 'Dez - Fev', temp: 'Frio intenso', value: 'inverno' },
+      { icon: '🌸', nome: 'Primavera', meses: 'Mar - Mai', temp: 'Tempo agradavel', value: 'primavera' },
+      { icon: '☀️', nome: 'Verao', meses: 'Jun - Ago', temp: 'Quente e ensolarado', value: 'verao' },
+      { icon: '🍂', nome: 'Outono', meses: 'Set - Nov', temp: 'Fresco e colorido', value: 'outono' },
+    ];
+  }
+}
+
+function renderEpoca(pais) {
+  const estacoes = getEstacoes(pais);
+  const grid = document.getElementById('epocaGrid');
+  const hint = document.getElementById('hintEpoca');
+  const sul = hemisfesrioSul.includes(pais);
+  hint.textContent = sul ? 'As estacoes sao invertidas neste destino.' : 'Vou incluir dicas de clima e vestuario para cada dia.';
+  grid.innerHTML = estacoes.map(e => '<div class="epoca-card" onclick="selectEpoca(this,\'' + e.value + '\')"><span class="epoca-icon">' + e.icon + '</span><div class="epoca-nome">' + e.nome + '</div><div class="epoca-meses">' + e.meses + '</div><div class="epoca-temp">' + e.temp + '</div></div>').join('');
+}
+
+function selectEpoca(el, value) {
+  document.querySelectorAll('.epoca-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.dataset.value = value;
+}
+
+let continenteSelecionado = '';
+
+function selectContinent(el, key) {
+  document.querySelectorAll('.continent-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  continenteSelecionado = key;
+  const pais = document.getElementById('selectPais');
+  const cidade = document.getElementById('selectCidade');
+  pais.innerHTML = '<option value="">Selecione o pais...</option>';
+  cidade.innerHTML = '<option value="">Selecione o pais...</option>';
+  (paisesPorContinente[key] || []).forEach(function(item) {
+    pais.innerHTML += '<option value="' + item[0] + '">' + item[1] + '</option>';
+  });
+  document.getElementById('erroPais').classList.remove('show');
+  document.getElementById('erroCidade').classList.remove('show');
+}
+
+function renderBairros(cidade) {
+  const grid = document.getElementById('bairrosGrid');
+  if (!grid) return;
+  const bairros = bairrosPorCidade[cidade] || ['Centro', 'Regiao turistica', 'Ainda nao decidi'];
+  grid.innerHTML = bairros.map(b => '<div class="tag-item bairro-item" onclick="selecionarBairro(this)">' + b + '</div>').join('');
+}
+
+function selecionarBairro(el) {
+  el.closest('.tags-grid').querySelectorAll('.tag-item').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function updateCidades() {
+  const pais = document.getElementById('selectPais').value;
+  const cidade = document.getElementById('selectCidade');
+  cidade.innerHTML = '<option value="">Selecione a cidade...</option>';
+  (cidades[pais] || []).forEach(c => { cidade.innerHTML += '<option value="' + c + '">' + c + '</option>'; });
+  if (pais) renderEpoca(pais);
+  document.getElementById('erroPais').classList.remove('show');
+}
+
+function onCidadeChange() {
+  const cidade = document.getElementById('selectCidade').value;
+  if (cidade) renderBairros(cidade);
+}
+
+function validarDestino() {
+  const pais = document.getElementById('selectPais').value;
+  const cidade = document.getElementById('selectCidade').value;
+  let ok = true;
+  if (!pais) { document.getElementById('erroPais').classList.add('show'); document.getElementById('selectPais').classList.add('required-error'); ok = false; } else { document.getElementById('erroPais').classList.remove('show'); document.getElementById('selectPais').classList.remove('required-error'); }
+  if (!cidade) { document.getElementById('erroCidade').classList.add('show'); document.getElementById('selectCidade').classList.add('required-error'); ok = false; } else { document.getElementById('erroCidade').classList.remove('show'); document.getElementById('selectCidade').classList.remove('required-error'); }
+  if (ok) goStep(2);
+}function buildDots() {
+  const d = document.getElementById('dots');
+  d.innerHTML = '';
+  for (let i = 1; i <= totalSteps; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 1 ? ' active' : '');
+    dot.id = 'dot' + i;
+    d.appendChild(dot);
+  }
+}
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.getElementById('progressFill').style.width = (n / totalSteps * 100) + '%';
+  document.querySelectorAll('.dot').forEach((d, i) => { d.classList.toggle('active', i < n); });
+  window.scrollTo(0, 0);
+}
+
+function selectOption(el, group) {
+  el.closest('.options').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function toggleTag(el) {
+  el.classList.toggle('selected');
+}
+
+async function iniciarPagamento() {
+  const btn = document.getElementById('btnPagar');
+  btn.textContent = 'Processando...';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+
+  const pais = document.getElementById('selectPais').value;
+  const cidade = document.getElementById('selectCidade').value;
+  const continente = document.querySelector('.continent-btn.selected') ? document.querySelector('.continent-btn.selected').querySelector('.continent-name').textContent : '';
+  const getTags = function(stepId) { return Array.from(document.querySelectorAll('#' + stepId + ' .tag-item.selected')).map(t => t.textContent.trim()); };
+  const getBairro = function() { const el = document.querySelector('#step10 .tag-item.selected'); return el ? el.textContent.trim() : 'Nao informado'; };
+  const getEpoca = function() { const el = document.querySelector('.epoca-card.selected .epoca-nome'); return el ? el.textContent : ''; };
+
+  const duracao = document.querySelector('#step2 .option.selected strong') ? document.querySelector('#step2 .option.selected strong').textContent : '';
+  const estilo = document.querySelector('#step4 .option.selected strong') ? document.querySelector('#step4 .option.selected strong').textContent : '';
+  const companhia = document.querySelector('#step5 .option.selected strong') ? document.querySelector('#step5 .option.selected strong').textContent : '';
+  const ritmo = document.querySelector('#step7 .option.selected strong') ? document.querySelector('#step7 .option.selected strong').textContent : '';
+
+  const answers = {
+    continente, pais, cidade,
+    epoca: getEpoca(),
+    dias: duracao,
+    estilo, companhia,
+    interesses: getTags('step6'),
+    ritmo,
+    preferencias: getTags('step8'),
+    alimentacao: getTags('step9'),
+    hospedagem: getBairro(),
+  };
+
+  try {
+    const emailInput = prompt('Qual e o seu e-mail? (para receber o roteiro)');
+    if (!emailInput) {
+      btn.textContent = 'Quero meu roteiro — Pagar US$ 19,99';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      return;
+    }
+
+    const resp = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailInput, destination: cidade + ', ' + pais, answers }),
+    });
+
+    const data = await resp.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'Erro ao criar sessao');
+    }
+  } catch (err) {
+    alert('Erro ao processar pagamento. Tente novamente.');
+    btn.textContent = 'Quero meu roteiro — Pagar US$ 19,99';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+renderEpoca('eua');
+buildDots();
+</script>
+</body>
+</html>
