@@ -8,10 +8,11 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: #060b14; color: #e8e2d4; min-height: 100vh; }
-  nav { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  nav.topnav { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
   .logo { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; color: #e8e2d4; text-decoration: none; }
   .logo span { color: #c9a84c; }
-  .container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
   .loading { text-align: center; padding: 80px 20px; }
   .loading-globe { font-size: 64px; display: block; margin-bottom: 24px; animation: spin 3s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -20,36 +21,88 @@
   .loading-step { font-size: 12px; color: rgba(201,168,76,0.6); margin-top: 10px; min-height: 18px; }
   .loading-bar { width: 200px; height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; margin: 20px auto 0; overflow: hidden; }
   .loading-fill { height: 100%; background: #c9a84c; border-radius: 2px; width: 0%; transition: width 0.6s ease; }
+
   .roteiro { display: none; }
-  .roteiro-header { text-align: center; padding: 40px 0 32px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 32px; }
+  .roteiro-header { text-align: center; padding: 40px 0 32px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 24px; }
   .roteiro-icon { font-size: 48px; display: block; margin-bottom: 16px; }
   .roteiro-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #e8e2d4; margin-bottom: 8px; }
-  .roteiro-subtitle { font-size: 13px; color: rgba(232,226,212,0.4); letter-spacing: 2px; text-transform: uppercase; }
-  .roteiro-content { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 32px; line-height: 1.8; font-size: 15px; color: rgba(232,226,212,0.85); }
-  .roteiro-content h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; color: #c9a84c; margin: 0 0 24px; text-align: center; border-bottom: 1px solid rgba(201,168,76,0.2); padding-bottom: 16px; }
-  .roteiro-content h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: #c9a84c; margin: 36px 0 14px; padding-top: 12px; }
-  .roteiro-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #e8e2d4; margin: 24px 0 10px; border-left: 2px solid #c9a84c; padding-left: 12px; }
-  .roteiro-content h4 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: #c9a84c; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
-  .roteiro-content strong { color: #e8e2d4; font-weight: 500; }
-  .roteiro-content em { color: rgba(232,226,212,0.7); font-style: italic; }
-  .roteiro-content p { margin: 10px 0; }
-  .roteiro-content ul, .roteiro-content ol { margin: 12px 0 12px 24px; padding-left: 8px; }
-  .roteiro-content li { margin: 6px 0; padding-left: 4px; }
-  .roteiro-content ul li::marker { color: #c9a84c; }
-  .roteiro-content hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 32px 0; }
-  .roteiro-content code { background: rgba(201,168,76,0.1); color: #c9a84c; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-  .btn-print { display: block; width: 100%; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: #c9a84c; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 20px; text-align: center; }
+  .roteiro-subtitle { font-size: 13px; color: rgba(232,226,212,0.4); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+  .roteiro-resumo { font-size: 14px; color: rgba(232,226,212,0.7); max-width: 600px; margin: 0 auto; line-height: 1.7; font-style: italic; }
+
+  .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 16px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .tabs::-webkit-scrollbar { height: 4px; }
+  .tabs::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
+  .tab { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: rgba(232,226,212,0.6); padding: 12px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.5px; }
+  .tab:hover { background: rgba(201,168,76,0.08); color: #e8e2d4; border-color: rgba(201,168,76,0.3); }
+  .tab.active { background: #c9a84c; color: #060b14; border-color: #c9a84c; font-weight: 600; }
+  .tab-num { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; margin-right: 6px; }
+
+  .dia-content { display: none; animation: fadeIn 0.3s ease; }
+  .dia-content.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .dia-header { background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2); border-radius: 16px; padding: 28px; margin-bottom: 20px; }
+  .dia-numero { font-size: 11px; color: #c9a84c; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+  .dia-titulo { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 400; color: #e8e2d4; line-height: 1.2; }
+  .dia-clima { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(201,168,76,0.15); font-size: 13px; color: rgba(232,226,212,0.7); display: flex; align-items: flex-start; gap: 8px; }
+  .dia-clima::before { content: '🌤️'; font-size: 16px; }
+
+  .periodo { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 22px; margin-bottom: 14px; }
+  .periodo-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .periodo-icon { font-size: 20px; }
+  .periodo-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: #c9a84c; font-weight: 500; }
+  .periodo-horario { margin-left: auto; font-size: 12px; color: rgba(232,226,212,0.45); background: rgba(255,255,255,0.04); padding: 4px 10px; border-radius: 6px; }
+  .periodo-lista { list-style: none; padding: 0; }
+  .periodo-lista li { padding: 8px 0 8px 20px; position: relative; font-size: 14px; color: rgba(232,226,212,0.85); line-height: 1.6; }
+  .periodo-lista li::before { content: '◆'; color: #c9a84c; position: absolute; left: 0; top: 8px; font-size: 10px; }
+
+  .info-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 22px; margin-bottom: 14px; }
+  .info-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .info-icon { font-size: 20px; }
+  .info-titulo { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: #c9a84c; font-weight: 500; }
+  .info-content { font-size: 14px; color: rgba(232,226,212,0.85); line-height: 1.7; }
+
+  .restaurante { background: rgba(201,168,76,0.04); border-left: 2px solid rgba(201,168,76,0.3); padding: 12px 16px; margin-bottom: 10px; border-radius: 6px; }
+  .restaurante-nome { font-weight: 500; color: #e8e2d4; font-size: 14px; }
+  .restaurante-tipo { font-size: 12px; color: #c9a84c; margin: 4px 0; }
+  .restaurante-preco { font-size: 12px; color: rgba(232,226,212,0.5); display: inline-block; margin-right: 8px; }
+  .restaurante-dica { font-size: 13px; color: rgba(232,226,212,0.7); font-style: italic; margin-top: 6px; }
+
+  .foto-item { display: inline-block; background: rgba(255,255,255,0.04); padding: 6px 12px; margin: 4px 4px 4px 0; border-radius: 6px; font-size: 13px; color: rgba(232,226,212,0.8); }
+  .dica-box { background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02)); border: 1px solid rgba(201,168,76,0.2); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  .dica-label { font-size: 11px; color: #c9a84c; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .dica-text { font-size: 14px; color: #e8e2d4; line-height: 1.6; }
+  .orcamento-tag { display: inline-block; background: rgba(201,168,76,0.12); color: #c9a84c; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-top: 8px; }
+
+  .resumo-final { margin-top: 32px; padding: 28px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
+  .resumo-final h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #c9a84c; margin-bottom: 14px; font-weight: 500; }
+  .resumo-final ul { list-style: none; padding: 0; }
+  .resumo-final ul li { padding: 8px 0 8px 22px; position: relative; font-size: 14px; color: rgba(232,226,212,0.85); line-height: 1.6; }
+  .resumo-final ul li::before { content: '✓'; color: #c9a84c; position: absolute; left: 0; font-weight: bold; }
+
+  .botoes { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+  .btn { flex: 1; min-width: 200px; padding: 14px 20px; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; display: inline-block; border: none; }
+  .btn-print { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: #c9a84c; }
   .btn-print:hover { background: rgba(201,168,76,0.15); border-color: #c9a84c; }
-  .btn-novo { display: block; width: 100%; background: #c9a84c; color: #060b14; border: none; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 12px; text-align: center; text-decoration: none; }
+  .btn-novo { background: #c9a84c; color: #060b14; border: 1px solid #c9a84c; }
   .btn-novo:hover { background: #d4b560; }
+
   .error { display: none; text-align: center; padding: 60px 20px; }
   .error-icon { font-size: 48px; margin-bottom: 16px; display: block; }
   .error-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; margin-bottom: 8px; }
   .error-sub { font-size: 13px; color: rgba(232,226,212,0.45); margin-bottom: 24px; }
+
+  @media print {
+    nav.topnav, .tabs, .botoes { display: none !important; }
+    body { background: #fff; color: #000; }
+    .dia-content:not(.active) { display: none !important; }
+    .dia-header, .periodo, .info-card, .dica-box, .resumo-final { background: #f5f0e3 !important; border-color: #c9a84c !important; color: #060b14 !important; }
+    .periodo-titulo, .info-titulo, .dia-numero, .dica-label, .orcamento-tag { color: #b8923d !important; }
+    .periodo-lista li, .info-content, .resumo-final ul li, .restaurante-nome, .dia-titulo, .dica-text { color: #060b14 !important; }
+  }
 </style>
 </head>
 <body>
-<nav>
+<nav class="topnav">
   <a href="/" class="logo">World<span>4</span>IA</a>
 </nav>
 <div class="container">
@@ -60,28 +113,45 @@
     <div class="loading-step" id="loadingStep">Verificando pagamento...</div>
     <div class="loading-bar"><div class="loading-fill" id="loadingFill"></div></div>
   </div>
+
   <div class="roteiro" id="roteiro">
     <div class="roteiro-header">
       <span class="roteiro-icon">🗺️</span>
       <div class="roteiro-title" id="roteiroTitulo">Seu Roteiro Personalizado</div>
       <div class="roteiro-subtitle">World4IA — Gerado por IA</div>
+      <div class="roteiro-resumo" id="roteiroResumo"></div>
     </div>
-    <div class="roteiro-content" id="roteiroContent"></div>
-    <button class="btn-print" onclick="window.print()">Imprimir / Salvar como PDF</button>
-    <a href="/" class="btn-novo">Criar novo roteiro</a>
+
+    <div class="tabs" id="tabs"></div>
+    <div id="diasContainer"></div>
+
+    <div class="resumo-final" id="resumoFinal" style="display:none;">
+      <h3>💼 Orcamento Total Estimado</h3>
+      <div id="orcamentoTotal" style="font-size:18px; color:#e8e2d4; margin-bottom:18px;"></div>
+      <h3>✨ Dicas Gerais</h3>
+      <ul id="dicasGerais"></ul>
+    </div>
+
+    <div class="botoes">
+      <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir dia atual</button>
+      <a href="/" class="btn btn-novo">Criar novo roteiro</a>
+    </div>
   </div>
+
   <div class="error" id="error">
     <span class="error-icon">😔</span>
     <div class="error-title">Algo deu errado</div>
     <div class="error-sub" id="errorMsg">Nao foi possivel gerar o roteiro.</div>
-    <a href="/" class="btn-novo">Tentar novamente</a>
+    <a href="/" class="btn btn-novo" style="max-width:300px; margin: 0 auto;">Tentar novamente</a>
   </div>
 </div>
+
 <script>
 function setProgress(pct, msg) {
   document.getElementById('loadingFill').style.width = pct + '%';
   if (msg) document.getElementById('loadingStep').textContent = msg;
 }
+
 async function gerarRoteiro() {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id');
@@ -107,113 +177,142 @@ async function gerarRoteiro() {
     const genData = await genResp.json();
     if (!genResp.ok || !genData.roteiro) throw new Error(genData.error || 'Erro ao gerar roteiro.');
     setProgress(100, 'Pronto!');
-    document.getElementById('roteiroContent').innerHTML = formatRoteiro(genData.roteiro);
+    renderRoteiro(genData.roteiro);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('roteiro').style.display = 'block';
   } catch (err) {
     showError(err.message);
   }
 }
-function formatRoteiro(text) {
-  const lines = text.split('\n');
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderRoteiro(data) {
+  if (data.destino) {
+    document.getElementById('roteiroTitulo').textContent = data.destino;
+    document.title = 'World4IA — ' + data.destino;
+  }
+  if (data.resumo) document.getElementById('roteiroResumo').textContent = data.resumo;
+
+  const tabsEl = document.getElementById('tabs');
+  const container = document.getElementById('diasContainer');
+  tabsEl.innerHTML = '';
+  container.innerHTML = '';
+
+  const dias = data.dias || [];
+  dias.forEach((dia, idx) => {
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (idx === 0 ? ' active' : '');
+    tab.innerHTML = '<span class="tab-num">' + (dia.numero || idx + 1) + '</span>' + escapeHtml(dia.titulo || 'Dia ' + (idx + 1));
+    tab.onclick = () => switchTab(idx);
+    tabsEl.appendChild(tab);
+
+    const diaEl = document.createElement('div');
+    diaEl.className = 'dia-content' + (idx === 0 ? ' active' : '');
+    diaEl.id = 'dia-' + idx;
+    diaEl.innerHTML = renderDia(dia);
+    container.appendChild(diaEl);
+  });
+
+  if (data.orcamentoTotal || (data.dicasGerais && data.dicasGerais.length)) {
+    document.getElementById('resumoFinal').style.display = 'block';
+    if (data.orcamentoTotal) document.getElementById('orcamentoTotal').textContent = data.orcamentoTotal;
+    if (data.dicasGerais) {
+      document.getElementById('dicasGerais').innerHTML = data.dicasGerais
+        .map(d => '<li>' + escapeHtml(d) + '</li>').join('');
+    }
+  }
+}
+
+function renderDia(dia) {
   let html = '';
-  let inList = false;
-  let listType = '';
+  html += '<div class="dia-header">';
+  html += '<div class="dia-numero">Dia ' + (dia.numero || '') + '</div>';
+  html += '<div class="dia-titulo">' + escapeHtml(dia.titulo || '') + '</div>';
+  if (dia.clima) html += '<div class="dia-clima">' + escapeHtml(dia.clima) + '</div>';
+  html += '</div>';
 
-  function closeList() {
-    if (inList) {
-      html += listType === 'ol' ? '</ol>' : '</ul>';
-      inList = false;
-      listType = '';
-    }
+  if (dia.manha) html += renderPeriodo('🌅', 'Manha', dia.manha);
+  if (dia.tarde) html += renderPeriodo('☀️', 'Tarde', dia.tarde);
+  if (dia.noite) html += renderPeriodo('🌙', 'Noite', dia.noite);
+
+  if (dia.gastronomia && dia.gastronomia.length) {
+    html += '<div class="info-card">';
+    html += '<div class="info-header"><span class="info-icon">🍽️</span><span class="info-titulo">Gastronomia</span></div>';
+    html += '<div class="info-content">';
+    dia.gastronomia.forEach(r => {
+      html += '<div class="restaurante">';
+      html += '<div class="restaurante-nome">' + escapeHtml(r.nome || '') + '</div>';
+      if (r.tipo) html += '<div class="restaurante-tipo">' + escapeHtml(r.tipo) + '</div>';
+      if (r.preco) html += '<span class="restaurante-preco">' + escapeHtml(r.preco) + '</span>';
+      if (r.dica) html += '<div class="restaurante-dica">' + escapeHtml(r.dica) + '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
   }
 
-  function processInline(str) {
-    // Negrito e itálico
-    str = str.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    str = str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    str = str.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    str = str.replace(/__(.+?)__/g, '<strong>$1</strong>');
-    // Código inline
-    str = str.replace(/`(.+?)`/g, '<code>$1</code>');
-    return str;
+  if (dia.transporte) {
+    html += '<div class="info-card">';
+    html += '<div class="info-header"><span class="info-icon">🚇</span><span class="info-titulo">Transporte</span></div>';
+    html += '<div class="info-content">' + escapeHtml(dia.transporte) + '</div>';
+    html += '</div>';
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].trim();
-
-    // Linha vazia
-    if (!line) {
-      closeList();
-      continue;
-    }
-
-    // Separador horizontal (---)
-    if (/^-{3,}$/.test(line) || /^={3,}$/.test(line)) {
-      closeList();
-      html += '<hr>';
-      continue;
-    }
-
-    // Cabeçalhos (do mais específico para o menos)
-    if (line.startsWith('#### ')) {
-      closeList();
-      html += '<h4>' + processInline(line.substring(5)) + '</h4>';
-      continue;
-    }
-    if (line.startsWith('### ')) {
-      closeList();
-      html += '<h3>' + processInline(line.substring(4)) + '</h3>';
-      continue;
-    }
-    if (line.startsWith('## ')) {
-      closeList();
-      html += '<h2>' + processInline(line.substring(3)) + '</h2>';
-      continue;
-    }
-    if (line.startsWith('# ')) {
-      closeList();
-      html += '<h1>' + processInline(line.substring(2)) + '</h1>';
-      continue;
-    }
-
-    // Lista ordenada (1. item)
-    if (/^\d+\.\s/.test(line)) {
-      if (!inList || listType !== 'ol') {
-        closeList();
-        html += '<ol>';
-        inList = true;
-        listType = 'ol';
-      }
-      html += '<li>' + processInline(line.replace(/^\d+\.\s/, '')) + '</li>';
-      continue;
-    }
-
-    // Lista não ordenada (- item ou * item)
-    if (line.startsWith('- ') || line.startsWith('* ')) {
-      if (!inList || listType !== 'ul') {
-        closeList();
-        html += '<ul>';
-        inList = true;
-        listType = 'ul';
-      }
-      html += '<li>' + processInline(line.substring(2)) + '</li>';
-      continue;
-    }
-
-    // Parágrafo comum
-    closeList();
-    html += '<p>' + processInline(line) + '</p>';
+  if (dia.fotos && dia.fotos.length) {
+    html += '<div class="info-card">';
+    html += '<div class="info-header"><span class="info-icon">📸</span><span class="info-titulo">Melhores pontos para fotos</span></div>';
+    html += '<div class="info-content">';
+    dia.fotos.forEach(f => { html += '<span class="foto-item">📍 ' + escapeHtml(f) + '</span>'; });
+    html += '</div></div>';
   }
 
-  closeList();
+  if (dia.dica) {
+    html += '<div class="dica-box">';
+    html += '<div class="dica-label">💡 Dica exclusiva do dia</div>';
+    html += '<div class="dica-text">' + escapeHtml(dia.dica) + '</div>';
+    html += '</div>';
+  }
+
+  if (dia.orcamento) {
+    html += '<div style="text-align:center;">';
+    html += '<div class="orcamento-tag">💰 Orcamento do dia: ' + escapeHtml(dia.orcamento) + '</div>';
+    html += '</div>';
+  }
+
   return html;
 }
+
+function renderPeriodo(icon, nome, periodo) {
+  let html = '<div class="periodo">';
+  html += '<div class="periodo-header">';
+  html += '<span class="periodo-icon">' + icon + '</span>';
+  html += '<span class="periodo-titulo">' + nome + '</span>';
+  if (periodo.horario) html += '<span class="periodo-horario">' + escapeHtml(periodo.horario) + '</span>';
+  html += '</div>';
+  if (periodo.atividades && periodo.atividades.length) {
+    html += '<ul class="periodo-lista">';
+    periodo.atividades.forEach(a => { html += '<li>' + escapeHtml(a) + '</li>'; });
+    html += '</ul>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.dia-content').forEach((d, i) => d.classList.toggle('active', i === idx));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function showError(msg) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('error').style.display = 'block';
   document.getElementById('errorMsg').textContent = msg;
 }
+
 gerarRoteiro();
 </script>
 </body>
