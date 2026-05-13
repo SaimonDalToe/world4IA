@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World4IA — Seu Roteiro Personalizado</title>
+<title>World4IU — Seu Roteiro Personalizado</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -118,7 +118,7 @@
     <div class="roteiro-header">
       <span class="roteiro-icon">🗺️</span>
       <div class="roteiro-title" id="roteiroTitulo">Seu Roteiro Personalizado</div>
-      <div class="roteiro-subtitle">World4IA — Gerado por IA</div>
+      <div class="roteiro-subtitle">World4IU — Gerado por IA</div>
       <div class="roteiro-resumo" id="roteiroResumo"></div>
     </div>
 
@@ -166,7 +166,7 @@ async function gerarRoteiro() {
     setProgress(40, 'Pagamento confirmado! Preparando roteiro...');
     if (destination) {
       document.getElementById('roteiroTitulo').textContent = 'Roteiro: ' + destination;
-      document.title = 'World4IA — Roteiro ' + destination;
+      document.title = 'World4IU — Roteiro ' + destination;
     }
     setProgress(60, 'Consultando IA...');
     const genResp = await fetch('/api/generate', {
@@ -193,7 +193,7 @@ function escapeHtml(s) {
 function renderRoteiro(data) {
   if (data.destino) {
     document.getElementById('roteiroTitulo').textContent = data.destino;
-    document.title = 'World4IA — ' + data.destino;
+    document.title = 'World4IU — ' + data.destino;
   }
   if (data.resumo) document.getElementById('roteiroResumo').textContent = data.resumo;
 
