@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
 
   if (!email) return res.status(400).json({ error: 'Email is required' });
 
-  const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://world4ia.vercel.app';
+  const BASE_URL = process.env.NEXT_PUBLIC_URL || 'https://World4IU.vercel.app';
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `World4IA — Roteiro personalizado: ${destination || 'Destino'}`,
+            name: `World4IU — Roteiro personalizado: ${destination || 'Destino'}`,
             description: 'Roteiro de viagem gerado por IA, dia a dia, com clima, restaurantes e dicas exclusivas.',
           },
           unit_amount: 1999,
