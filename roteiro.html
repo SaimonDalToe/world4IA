@@ -26,9 +26,18 @@
   .roteiro-title { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: #e8e2d4; margin-bottom: 8px; }
   .roteiro-subtitle { font-size: 13px; color: rgba(232,226,212,0.4); letter-spacing: 2px; text-transform: uppercase; }
   .roteiro-content { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 32px; line-height: 1.8; font-size: 15px; color: rgba(232,226,212,0.85); }
-  .roteiro-content h2 { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: #c9a84c; margin: 28px 0 12px; }
-  .roteiro-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #e8e2d4; margin: 20px 0 8px; border-left: 2px solid #c9a84c; padding-left: 12px; }
-  .roteiro-content strong { color: #e8e2d4; }
+  .roteiro-content h1 { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 400; color: #c9a84c; margin: 0 0 24px; text-align: center; border-bottom: 1px solid rgba(201,168,76,0.2); padding-bottom: 16px; }
+  .roteiro-content h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: #c9a84c; margin: 36px 0 14px; padding-top: 12px; }
+  .roteiro-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: #e8e2d4; margin: 24px 0 10px; border-left: 2px solid #c9a84c; padding-left: 12px; }
+  .roteiro-content h4 { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: #c9a84c; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .roteiro-content strong { color: #e8e2d4; font-weight: 500; }
+  .roteiro-content em { color: rgba(232,226,212,0.7); font-style: italic; }
+  .roteiro-content p { margin: 10px 0; }
+  .roteiro-content ul, .roteiro-content ol { margin: 12px 0 12px 24px; padding-left: 8px; }
+  .roteiro-content li { margin: 6px 0; padding-left: 4px; }
+  .roteiro-content ul li::marker { color: #c9a84c; }
+  .roteiro-content hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 32px 0; }
+  .roteiro-content code { background: rgba(201,168,76,0.1); color: #c9a84c; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
   .btn-print { display: block; width: 100%; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: #c9a84c; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 20px; text-align: center; }
   .btn-print:hover { background: rgba(201,168,76,0.15); border-color: #c9a84c; }
   .btn-novo { display: block; width: 100%; background: #c9a84c; color: #060b14; border: none; border-radius: 12px; padding: 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-top: 12px; text-align: center; text-decoration: none; }
@@ -106,11 +115,99 @@ async function gerarRoteiro() {
   }
 }
 function formatRoteiro(text) {
-  return text
-    .replace(/## (.*)/g, '<h2>$1</h2>')
-    .replace(/### (.*)/g, '<h3>$1</h3>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>');
+  const lines = text.split('\n');
+  let html = '';
+  let inList = false;
+  let listType = '';
+
+  function closeList() {
+    if (inList) {
+      html += listType === 'ol' ? '</ol>' : '</ul>';
+      inList = false;
+      listType = '';
+    }
+  }
+
+  function processInline(str) {
+    // Negrito e itálico
+    str = str.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    str = str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    str = str.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    str = str.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    // Código inline
+    str = str.replace(/`(.+?)`/g, '<code>$1</code>');
+    return str;
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    // Linha vazia
+    if (!line) {
+      closeList();
+      continue;
+    }
+
+    // Separador horizontal (---)
+    if (/^-{3,}$/.test(line) || /^={3,}$/.test(line)) {
+      closeList();
+      html += '<hr>';
+      continue;
+    }
+
+    // Cabeçalhos (do mais específico para o menos)
+    if (line.startsWith('#### ')) {
+      closeList();
+      html += '<h4>' + processInline(line.substring(5)) + '</h4>';
+      continue;
+    }
+    if (line.startsWith('### ')) {
+      closeList();
+      html += '<h3>' + processInline(line.substring(4)) + '</h3>';
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      closeList();
+      html += '<h2>' + processInline(line.substring(3)) + '</h2>';
+      continue;
+    }
+    if (line.startsWith('# ')) {
+      closeList();
+      html += '<h1>' + processInline(line.substring(2)) + '</h1>';
+      continue;
+    }
+
+    // Lista ordenada (1. item)
+    if (/^\d+\.\s/.test(line)) {
+      if (!inList || listType !== 'ol') {
+        closeList();
+        html += '<ol>';
+        inList = true;
+        listType = 'ol';
+      }
+      html += '<li>' + processInline(line.replace(/^\d+\.\s/, '')) + '</li>';
+      continue;
+    }
+
+    // Lista não ordenada (- item ou * item)
+    if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList || listType !== 'ul') {
+        closeList();
+        html += '<ul>';
+        inList = true;
+        listType = 'ul';
+      }
+      html += '<li>' + processInline(line.substring(2)) + '</li>';
+      continue;
+    }
+
+    // Parágrafo comum
+    closeList();
+    html += '<p>' + processInline(line) + '</p>';
+  }
+
+  closeList();
+  return html;
 }
 function showError(msg) {
   document.getElementById('loading').style.display = 'none';
