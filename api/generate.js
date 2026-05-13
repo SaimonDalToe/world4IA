@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     hospedagem = '',
   } = answers;
 
-  const prompt = `Voce e um especialista em viagens. Crie um roteiro personalizado e detalhado.
+  const prompt = `Crie um roteiro de viagem personalizado.
 
 DESTINO: ${cidade || destination}, ${pais} (${continente})
 EPOCA: ${epoca}
@@ -39,64 +39,77 @@ PREFERENCIAS: ${Array.isArray(preferencias) ? preferencias.join(', ') : preferen
 ALIMENTACAO: ${Array.isArray(alimentacao) ? alimentacao.join(', ') : alimentacao}
 HOSPEDAGEM: ${hospedagem}
 
-IMPORTANTE: Retorne APENAS um JSON valido (sem texto antes ou depois, sem markdown, sem blocos de codigo). O JSON deve ter exatamente esta estrutura:
+REGRAS CRITICAS:
+1. Retorne APENAS JSON puro, sem blocos de codigo markdown, sem texto antes ou depois.
+2. NAO use crases triplas (tres backticks seguidos) no inicio ou fim.
+3. NAO escreva "json" ou qualquer rotulo antes do JSON.
+4. Use aspas duplas para strings, nunca aspas simples.
+5. Escape aspas dentro de strings com barra invertida.
+6. Sem virgula apos o ultimo item de array ou objeto.
+7. Texto curto e direto em cada campo.
 
+ESTRUTURA EXATA do JSON:
 {
-  "destino": "Nome da cidade, Pais",
-  "resumo": "Breve resumo do destino em 2-3 frases.",
+  "destino": "Cidade, Pais",
+  "resumo": "Resumo curto em 2 frases.",
   "dias": [
     {
       "numero": 1,
-      "titulo": "Titulo do dia (ex: Chegada e exploracao de Palermo)",
-      "clima": "Clima esperado e como se vestir neste dia.",
-      "manha": {
-        "horario": "9h-12h30",
-        "atividades": ["Atividade 1 com detalhes", "Atividade 2 com detalhes"]
-      },
-      "tarde": {
-        "horario": "13h-17h",
-        "atividades": ["Atividade 1", "Atividade 2"]
-      },
-      "noite": {
-        "horario": "19h-23h",
-        "atividades": ["Atividade 1", "Atividade 2"]
-      },
+      "titulo": "Titulo curto do dia",
+      "clima": "Clima e como se vestir.",
+      "manha": {"horario": "9h-12h", "atividades": ["Atividade 1", "Atividade 2"]},
+      "tarde": {"horario": "13h-17h", "atividades": ["Atividade 1", "Atividade 2"]},
+      "noite": {"horario": "19h-23h", "atividades": ["Atividade 1", "Atividade 2"]},
       "gastronomia": [
-        {"nome": "Nome do restaurante", "tipo": "Tipo de culinaria", "preco": "$$ ou $$$", "dica": "Dica especial"}
+        {"nome": "Restaurante", "tipo": "Tipo culinaria", "preco": "$$", "dica": "Dica curta"}
       ],
-      "transporte": "Como se locomover neste dia (metro, taxi, caminhada, etc).",
-      "fotos": ["Local 1 para fotos", "Local 2 para fotos"],
-      "orcamento": "Estimativa em dolares para o dia (ex: US$ 80-120)",
-      "dica": "Uma dica exclusiva e pratica para este dia."
+      "transporte": "Como se locomover.",
+      "fotos": ["Local 1", "Local 2"],
+      "orcamento": "US$ 80-120",
+      "dica": "Dica do dia."
     }
   ],
-  "orcamentoTotal": "Estimativa total da viagem em dolares",
+  "orcamentoTotal": "US$ 500-700",
   "dicasGerais": ["Dica 1", "Dica 2", "Dica 3"]
 }
 
-Gere um dia para cada dia da duracao informada. Seja detalhado e use restaurantes e locais REAIS da cidade. Responda APENAS com o JSON, sem nenhum texto adicional.`;
+Gere um objeto na array "dias" para cada dia da viagem. Use locais e restaurantes reais da cidade. Seja conciso para evitar JSON muito longo.`;
 
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 4000,
+      max_tokens: 8000,
       messages: [{ role: 'user', content: prompt }],
     });
-    const raw = message.content[0]?.text;
+    const raw = message.content[0]?.text || '';
     if (!raw) throw new Error('Resposta vazia da IA');
 
-    // Tenta extrair JSON mesmo se vier com texto extra
+    // Limpa a resposta: remove blocos markdown ```json ... ```
     let jsonStr = raw.trim();
-    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-    if (jsonMatch) jsonStr = jsonMatch[0];
+
+    // Remove ```json no início e ``` no final (variantes)
+    jsonStr = jsonStr.replace(/^```(?:json)?\s*\n?/i, '');
+    jsonStr = jsonStr.replace(/\n?```\s*$/i, '');
+    jsonStr = jsonStr.trim();
+
+    // Extrai apenas o objeto JSON (caso ainda haja texto sobrando)
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace = jsonStr.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonStr = jsonStr.substring(firstBrace, lastBrace + 1);
+    }
+
+    // Tenta corrigir vírgulas finais (trailing commas) que quebram JSON
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');
 
     let roteiro;
     try {
       roteiro = JSON.parse(jsonStr);
     } catch (e) {
       console.error('Erro ao parsear JSON:', e.message);
-      console.error('Resposta bruta:', raw);
-      throw new Error('Formato de resposta invalido. Tente novamente.');
+      console.error('JSON tentado (primeiros 500 chars):', jsonStr.substring(0, 500));
+      console.error('JSON tentado (ultimos 500 chars):', jsonStr.substring(Math.max(0, jsonStr.length - 500)));
+      throw new Error('A IA retornou um formato invalido. Tente novamente.');
     }
 
     return res.status(200).json({ roteiro });
